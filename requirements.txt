@@ -1,0 +1,10 @@
+numpy
+opencv-python
+ultralytics
+supervision
+scikit-learn
+matplotlib
+pytest
+pathlib
+dataclasses
+pickle5; python_version < '3.8'
