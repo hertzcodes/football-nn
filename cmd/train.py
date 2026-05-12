@@ -14,7 +14,6 @@ from config import Config
 
 logger = logging.getLogger(__name__)
 
-
 def parse_args(argv, config: Config):
     """Parse command line arguments with config defaults"""
     parser = argparse.ArgumentParser(
@@ -26,6 +25,12 @@ def parse_args(argv, config: Config):
         type=str,
         default=config.Train.train_data_path,
         help=f"Path to training data (default: {config.Train.train_data_path})"
+    )
+
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        default=False,
     )
 
     parser.add_argument(
@@ -64,15 +69,16 @@ def parse_args(argv, config: Config):
     )
 
     parser.add_argument(
-        "--cache-dir",
+        "--confidence", "-c",
         type=str,
-        default=config.cache_dir,
-        help=f"Cache directory (default: {config.cache_dir})"
+        default=config.Train.conf,
+        help=f"Confidence (default: {config.Train.conf})"
     )
 
     parser.add_argument(
         "--no-cache",
         action="store_true",
+        default=not config.Train.use_cache,
         help="Disable caching"
     )
 
@@ -92,29 +98,37 @@ def train_model(args, config: Config):
     log_level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(level=log_level, format='%(asctime)s - %(levelname)s - %(message)s')
 
-    config.batch_size = args.batch_size
-    config.device = args.device
-    config.yolo_base_model = args.yolo_model
-    config.cache_dir = args.cache_dir
-    config.use_cache = not args.no_cache
-
     logger.info("Training configuration:")
     logger.info("  Data: %s", {args.data})
     logger.info("  Model save path: %s", {args.output})
     logger.info("  Epochs: %s", {args.epochs})
     logger.info("  Device: %s", {config.device})
-    logger.info("  Batch size: %s", {config.batch_size})
-    logger.info("  YOLO model: %s", {config.yolo_base_model})
-    logger.info("  Cache: %s", {'Enabled' if config.use_cache else 'Disabled'})
-    logger.info("  Cache dir: %s", {config.cache_dir})
+    logger.info("  Batch size: %s", {args.batch_size})
+    logger.info("  Confidence: %s", {args.confidence})
+    logger.info("  YOLO model: %s", {args.yolo_model})
+    logger.info("  Cache: %s", {'Enabled' if not args.no_cache else 'Disabled'})
 
     model = YOLO(config.Train.yolo_base_model)
     model.train(
         data=args.data,
         epochs=args.epochs,
-        batch=config.Train.batch_size,
-        device=config.device,
-        conf=config.conf,
+        batch=args.batch_size,
+        device=args.device,
+        conf=args.confidence,
+        imgsz=config.Train.imgsz,
+        cache='ram',
+        verbose=args.verbose,
+        workers=6,
+        nbs=32,
+        half=False,
+        amp=False,
+        lr0=0.01,
+        lrf=0.01,
+        warmup_epochs=3,
+        save_period=5,
+        save=True,
+        exist_ok=True,
+        resume=args.resume,
     )
 
     model.save(args.output)
