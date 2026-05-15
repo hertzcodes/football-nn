@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from typing import List, Tuple
-
 import torch
 
 @dataclass
@@ -32,3 +31,10 @@ class Config:
         conf: float = 0.1
         cache_dir: str = "cache"
         use_cache: bool = True
+
+    class Analyzer:
+        """
+        Docstring for Analyzer
+        """
+
+        player_model_path = 'models/player_best.pt'

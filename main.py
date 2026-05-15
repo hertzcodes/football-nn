@@ -30,11 +30,18 @@ def main():
         help="Train a model"
     )
 
+    subparsers.add_parser(
+        "analyze",
+        help="Analyze a video"
+    )
+
     args, remaining = parser.parse_known_args()
 
     match args.command:
         case "train":
             cmd.train_model(remaining, config)
+        case "analyze":
+            cmd.run_analyzer(remaining, config)
         case _:
             print(f"Unknown command: {args.command}")
             parser.print_help()
