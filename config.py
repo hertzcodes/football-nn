@@ -8,7 +8,7 @@ class Config:
     Docstring for Config
     """
     input_video_path: str = "./input_video.mp4"
-    output_video_path: str = "./output_video.mp4"
+    output_video_path: str = "./output_video.avi"
 
     device: str = "mps" if torch.backends.mps.is_available() else "cpu"
 
