@@ -116,7 +116,7 @@ def train_model(args, config: Config):
         device=args.device,
         conf=args.confidence,
         imgsz=config.Train.imgsz,
-        cache='ram',
+        cache='disk',
         verbose=args.verbose,
         workers=6,
         nbs=32,

@@ -2,6 +2,7 @@ from config import Config
 import utils
 from tracking import Tracker
 from assigner import Assigner
+from renderer import Renderer
 
 def parse_args(argv, config: Config):
     """
@@ -43,5 +44,6 @@ def run_analyzer(args, config: Config):
             else:
                 tracks['players'][frame_num][player_id]['team_color'] = config.colors[2]
 
-    output_video_frames = tracker.draw_annotations(video_frames,tracks)
+    renderer = Renderer()
+    output_video_frames = renderer.render_items(video_frames,tracks)
     utils.save_video(output_video_frames,config.output_video_path)

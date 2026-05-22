@@ -16,7 +16,6 @@ class Assigner:
             actual_color = self.__get_color(frame, box)
             colors.append(actual_color)
 
-        self.model = KMeans(n_clusters=2, init="k-means++", n_init=10)
         self.model.fit(colors)
 
         self.first_team_color = self.model.cluster_centers_[0]
@@ -43,13 +42,14 @@ class Assigner:
         crop = frame[y1:y2, x1:x2]
 
         h = crop.shape[0]
-        mid_third = crop[h // 3 : 2 * h // 3, :]
+        # mid_third = crop[h // 3 : 2 * h // 3, :]
+        top_half = crop[0:h//2,:]
 
-        image_reshaped = mid_third.reshape(-1, 3)
+        image_reshaped = top_half.reshape(-1, 3)
 
         model = KMeans(n_clusters = 2, init="k-means++", n_init=1)
         model.fit(image_reshaped)
-        labels = model.labels_.reshape(mid_third.shape[0], mid_third.shape[1])
+        labels = model.labels_.reshape(top_half.shape[0], top_half.shape[1])
 
         corner_labels = [labels[0, 0], labels[0, -1], labels[-1, 0], labels[-1, -1]]
         bg_cluster = max(set(corner_labels), key=corner_labels.count)
