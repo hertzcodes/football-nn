@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 import torch
 
 @dataclass
@@ -12,13 +12,14 @@ class Config:
 
     device: str = "mps" if torch.backends.mps.is_available() else "cpu"
 
-    colors: List[Tuple[int, int, int]] = field(
-        default_factory=lambda: [
-            (0, 215, 255),   # referees/coaches – amber
-            (50, 205, 50),   # team 1 – green
-            (60, 20, 220),   # team 2 – deep red
-        ]
+    colors: Dict[int, Tuple[int, int, int]] = field(
+        default_factory=lambda: {
+            0: (0,   215, 255),   # yellow  unknown / referee fallback
+            1: (50,  205,  50),   # green   team 1
+            2: (60,   20, 220),   # red     team 2
+        }
     )
+
 
     class Train:
         """
