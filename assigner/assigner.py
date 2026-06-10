@@ -14,10 +14,8 @@ class Assigner:
         )
         self.fitted: bool = False
 
-        
         self.memory: dict[int, np.ndarray] = {}
 
-        
         self.player_team: dict[int, int] = {}
 
 
@@ -28,7 +26,6 @@ class Assigner:
 
 
     def assign_team(self, frame: np.ndarray, players: dict) -> None:
-
         features: list[np.ndarray] = []
         track_ids: list[int] = []
 
@@ -97,7 +94,6 @@ class Assigner:
 
     def _set_team(self, track_id: int, team: int) -> None:
         """Central place to record a team assignment."""
-        # Remove from old team set if switching
         self.team1_ids.discard(track_id)
         self.team2_ids.discard(track_id)
 
@@ -149,7 +145,6 @@ class Assigner:
 
         h, w = crop.shape[:2]
 
-        
         region = crop[
             int(h * 0.20): int(h * 0.55),
             int(w * 0.25): int(w * 0.75),
@@ -158,7 +153,6 @@ class Assigner:
         if region.size == 0:
             return np.zeros(3)
 
-        
         hsv = cv2.cvtColor(region, cv2.COLOR_BGR2HSV)
         pixels = hsv.reshape(-1, 3).astype(np.float32)
 
@@ -169,11 +163,7 @@ class Assigner:
         if len(pixels) < 10:
             return np.zeros(3)
 
-        return np.mean(pixels, axis=0)  
+        return np.mean(pixels, axis=0)
 
     def _valid(self, f: np.ndarray) -> bool:
         return bool(np.linalg.norm(f) > 10)
-
-    
-    __get_feature = _get_feature
-    __valid = _valid

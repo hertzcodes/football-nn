@@ -105,7 +105,6 @@ def run_analyzer(args, config: Config) -> None:
 
     assigner = Assigner()
 
-    
     bootstrap_players = {}
     for frame_idx in range(min(30, len(video_frames))):
         for track_id, player in tracks["players"][frame_idx].items():
@@ -117,7 +116,6 @@ def run_analyzer(args, config: Config) -> None:
     def resolve_color(team: int) -> tuple:
         return config.colors.get(team, config.colors.get(0, (128, 128, 128)))
 
-    
     for frame_num, player_track in enumerate(tracks["players"]):
         frame = video_frames[frame_num]
         for track_id, track in player_track.items():
@@ -130,21 +128,6 @@ def run_analyzer(args, config: Config) -> None:
             track["global_id"]  = pid
             track["team"]       = team
             track["team_color"] = resolve_color(team)
-
-    
-    # for frame_num, gk_track in enumerate(tracks["goalkeepers"]):
-    #     frame = video_frames[frame_num]
-    #     for track_id, gk in gk_track.items():
-    #         pid = assigner.get_player_team(
-    #             frame, gk["bounding_box"], track_id,
-    #         )
-    #         if pid is None:
-    #             continue
-    #         team = assigner.get_team(pid)
-    #         gk["global_id"]  = pid
-    #         gk["team"]       = team
-    #         gk["team_color"] = resolve_color(team)
-
 
     renderer = Renderer()
     output_frames = renderer.render_items(video_frames, tracks)
