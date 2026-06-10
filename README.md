@@ -37,6 +37,16 @@ An end-to-end computer vision pipeline that processes football broadcast videos 
 ### Configuration
 All pipeline variables, models, input video paths, and fallback colors are configured in `config.py`.
 
+### Requirements
+```bash
+python -m venv .venv
+
+windows: .venv\Scripts\activate
+unix: source .venv/bin/activate
+
+pip install -r requirements.txt
+```
+
 ### Running Analysis
 To process a video and generate the annotated tactical video:
 ```bash
