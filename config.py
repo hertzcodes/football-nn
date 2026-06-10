@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Tuple, Dict
+from typing import Tuple, Dict
 import torch
 
 @dataclass
@@ -10,7 +10,12 @@ class Config:
     input_video_path: str = "./input_video.mp4"
     output_video_path: str = "./output_video.avi"
 
-    device: str = "mps" if torch.backends.mps.is_available() else "cpu"
+    if torch.backends.mps.is_available():
+        device = "mps"
+    elif torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = "cpu"
 
     colors: Dict[int, Tuple[int, int, int]] = field(
         default_factory=lambda: {
