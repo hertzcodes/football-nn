@@ -1,81 +1,10 @@
 from config import Config
 import utils
 
-from tracking import Tracker
+from tracking import Tracker, PitchTracker
 from assigner import Assigner
 from renderer import Renderer
-import numpy as np
-
-
-def _compute_best_homography(field_detector, frames, mapper):
-    """
-    Scan every 10 frames across the entire video, building a composite
-    keypoint set that keeps the highest-confidence detection seen so far
-    for each of the 32 indices.
-
-    Stops early if all 32 keypoints have conf >= 0.5.
-
-    Returns
-    -------
-    H              : (3,3) homography matrix or None
-    best_frame_idx : frame index that triggered the final H computation
-    n_good         : number of keypoints with conf >= 0.5 used
-    """
-    CONF_MIN      = 0.5
-    SAMPLE_EVERY  = 10
-    N_KPT         = 32
-
-    
-    best_pts  = np.zeros((N_KPT, 2), dtype=np.float32)
-    best_conf = np.zeros(N_KPT,      dtype=np.float32)
-
-    best_H          = None
-    best_n_good     = 0
-    best_frame_idx  = 0
-
-    total_frames = len(frames)
-    scanned      = 0
-
-    for i in range(0, total_frames, SAMPLE_EVERY):
-        result = field_detector.detect_keypoints_with_confidence(frames[i])
-        if result is None:
-            continue
-
-        pts, conf = result   
-        scanned += 1
-
-        
-        for idx in range(min(N_KPT, len(pts))):
-            if conf[idx] > best_conf[idx]:
-                best_conf[idx] = conf[idx]
-                best_pts[idx]  = pts[idx]
-
-        n_good = int((best_conf >= CONF_MIN).sum())
-
-        
-        H = mapper.compute(best_pts, confidences=best_conf)
-
-        if H is not None and n_good > best_n_good:
-            best_H         = H
-            best_n_good    = n_good
-            best_frame_idx = i
-
-        print(
-            f"  [scan] frame {i:04d} — "
-            f"{n_good}/32 keypoints >= 0.5 conf"
-        )
-
-        
-        if n_good == N_KPT:
-            print(f"  [scan] All 32 keypoints found — stopping early.")
-            break
-
-    print(
-        f"Scanned {scanned} frames — best H from frame {best_frame_idx} "
-        f"({best_n_good}/32 high-confidence keypoints)."
-    )
-
-    return best_H, best_frame_idx, best_n_good
+from homography import HomographyTransformer
 
 
 def run_analyzer(args, config: Config) -> None:
@@ -88,11 +17,8 @@ def run_analyzer(args, config: Config) -> None:
       5. Annotate frames and write output video.
     """
 
-
     video_frames = utils.read_video(config.input_video_path)
     print(f"Loaded {len(video_frames)} frames from {config.input_video_path}")
-
-
 
     tracker = Tracker(
         config.Analyzer.player_model_path,
@@ -100,6 +26,10 @@ def run_analyzer(args, config: Config) -> None:
     )
 
     print("Scanning video for best keypoint detections...")
+    field_tracker = PitchTracker(config.Analyzer.field_model_path, config.device)
+
+    homography = HomographyTransformer(field_tracker)
+    homography.precompute_keyframes(video_frames)
 
     tracks = tracker.track_detections(video_frames)
 
@@ -129,7 +59,7 @@ def run_analyzer(args, config: Config) -> None:
             track["team"]       = team
             track["team_color"] = resolve_color(team)
 
-    renderer = Renderer()
+    renderer = Renderer(homography)
     output_frames = renderer.render_items(video_frames, tracks)
     utils.save_video(output_frames, config.output_video_path)
     print(f"Saved: {config.output_video_path}")
