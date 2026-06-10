@@ -5,3 +5,4 @@ runs
 data
 *.zip
 *.pdf
+.DS_Store
