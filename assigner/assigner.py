@@ -23,6 +23,8 @@ class Assigner:
 
         self.team1_ids: set[int] = set()
         self.team2_ids: set[int] = set()
+        self.team_colors: dict[int, tuple[int, int, int]] = {0: (0, 215, 255)}
+
 
 
     def assign_team(self, frame: np.ndarray, players: dict) -> None:
@@ -48,11 +50,23 @@ class Assigner:
             team = 1 if label == 0 else 2
             self._set_team(track_id, team)
 
+        for cluster_idx in range(2):
+            center = self.model.cluster_centers_[cluster_idx]
+            hsv_pixel = np.uint8([[center]])
+            bgr_pixel = cv2.cvtColor(hsv_pixel, cv2.COLOR_HSV2BGR)[0][0]
+            bgr_tuple = (int(bgr_pixel[0]), int(bgr_pixel[1]), int(bgr_pixel[2]))
+            team_num = 1 if cluster_idx == 0 else 2
+            self.team_colors[team_num] = bgr_tuple
+
         print(
             f"[Assigner] init_teams: "
             f"team1={len(self.team1_ids)} "
             f"team2={len(self.team2_ids)} players"
         )
+
+    def get_team_color(self, team: int) -> tuple:
+        return self.team_colors.get(team, self.team_colors.get(0, (0, 215, 255)))
+
 
     def get_player_team(
         self,

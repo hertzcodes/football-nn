@@ -43,9 +43,6 @@ def run_analyzer(args, config: Config) -> None:
 
     assigner.assign_team(video_frames[0], bootstrap_players)
 
-    def resolve_color(team: int) -> tuple:
-        return config.colors.get(team, config.colors.get(0, (128, 128, 128)))
-
     for frame_num, player_track in enumerate(tracks["players"]):
         frame = video_frames[frame_num]
         for track_id, track in player_track.items():
@@ -57,7 +54,7 @@ def run_analyzer(args, config: Config) -> None:
             team = assigner.get_team(pid)
             track["global_id"]  = pid
             track["team"]       = team
-            track["team_color"] = resolve_color(team)
+            track["team_color"] = assigner.get_team_color(team)
 
     renderer = Renderer(homography)
     output_frames = renderer.render_items(video_frames, tracks)

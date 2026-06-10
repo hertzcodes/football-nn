@@ -20,11 +20,8 @@ class Config:
     colors: Dict[int, Tuple[int, int, int]] = field(
         default_factory=lambda: {
             0: (0,   215, 255),   # yellow  unknown / referee fallback
-            1: (50,  205,  50),   # green   team 1
-            2: (60,   20, 220),   # red     team 2
         }
     )
-
 
     class Train:
         """
